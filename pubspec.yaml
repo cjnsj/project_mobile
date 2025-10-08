@@ -35,6 +35,9 @@ dependencies:
   cached_network_image: ^3.3.1 # Untuk menampilkan & cache gambar dari internet
   url_launcher: ^6.2.6 
   shared_preferences: ^2.2.3
+  youtube_player_flutter: ^9.0.0
+  # GUNAKAN VERSI TERBARU DENGAN TANDA CARET (^)
+  flutter_inappwebview: ^6.0.0
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.

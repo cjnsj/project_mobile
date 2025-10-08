@@ -1,10 +1,11 @@
 // lib/screens/detail_screen.dart
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:filmku_app/screens/player_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../services/api_service.dart';
 import '../services/bookmark_service.dart';
+import 'package:filmku_app/screens/player_screen.dart';
 
 class DetailScreen extends StatefulWidget {
   final int movieId;
@@ -58,20 +59,24 @@ class _DetailScreenState extends State<DetailScreen> {
 
   void _playTrailer() async {
     try {
-      final key = await movieTrailerKey;
-      final youtubeUrl = Uri.parse('https://www.youtube.com/watch?v=$key');
+      final key = await movieTrailerKey; // Tunggu hingga ID trailer didapatkan
 
-      if (await canLaunchUrl(youtubeUrl)) {
-        await launchUrl(youtubeUrl, mode: LaunchMode.externalApplication);
-      } else {
-        throw 'Tidak bisa membuka URL YouTube';
-      }
+      // Navigasi ke halaman PlayerScreen
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => PlayerScreen(videoId: key),
+        ),
+      );
+
     } catch (e) {
+      // Tampilkan pesan error jika trailer tidak ditemukan
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Gagal membuka trailer: ${e.toString()}')),
+        SnackBar(content: Text('Gagal memuat trailer: ${e.toString()}')),
       );
     }
   }
+
 
   @override
   Widget build(BuildContext context) {

@@ -1,6 +1,7 @@
 // lib/screens/home_screen.dart
 
 import 'package:flutter/material.dart';
+import 'movie_list_screen.dart';
 import '../services/api_service.dart';
 import '../widgets/movie_card.dart';
 import '../widgets/popular_movie_card.dart';
@@ -13,7 +14,6 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  // Instance ApiService agar tidak dibuat berulang kali
   final ApiService apiService = ApiService();
   late Future<List<dynamic>> nowShowingMovies;
   late Future<List<dynamic>> popularMovies;
@@ -21,7 +21,6 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    // Panggil API saat halaman pertama kali dimuat
     nowShowingMovies = apiService.getNowShowingMovies();
     popularMovies = apiService.getPopularMovies();
   }
@@ -29,13 +28,12 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
         leading: const IconButton(
           icon: Icon(Icons.menu, color: Colors.black),
-          onPressed: null, // Fungsi ditambahkan nanti
+          onPressed: null,
         ),
         title: const Text(
           'FilmKu',
@@ -45,7 +43,7 @@ class _HomeScreenState extends State<HomeScreen> {
         actions: const [
           IconButton(
             icon: Icon(Icons.notifications_none, color: Colors.black, size: 28),
-            onPressed: null, // Fungsi ditambahkan nanti
+            onPressed: null,
           ),
         ],
       ),
@@ -54,13 +52,13 @@ class _HomeScreenState extends State<HomeScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // --- Bagian "Now Showing" ---
-            buildSectionTitle('Now Showing'),
+            buildSectionTitle('Now Showing', nowShowingMovies),
             buildNowShowingList(),
             
             const SizedBox(height: 20),
 
             // --- Bagian "Popular" ---
-            buildSectionTitle('Popular'),
+            buildSectionTitle('Popular', popularMovies),
             buildPopularList(),
           ],
         ),
@@ -68,8 +66,8 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // Widget untuk judul section
-  Widget buildSectionTitle(String title) {
+  // Widget untuk judul section dengan "See more" yang bisa diklik
+  Widget buildSectionTitle(String title, Future<List<dynamic>> movieFuture) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       child: Row(
@@ -79,9 +77,26 @@ class _HomeScreenState extends State<HomeScreen> {
             title,
             style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
-          Text(
-            'See more',
-            style: TextStyle(color: Colors.grey[600]),
+          InkWell(
+            onTap: () {
+              // Aksi navigasi saat "See more" di-tap
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => MovieListScreen(
+                    title: title,
+                    movieFuture: movieFuture,
+                  ),
+                ),
+              );
+            },
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text(
+                'See more',
+                style: TextStyle(color: Colors.grey[600]),
+              ),
+            ),
           ),
         ],
       ),
@@ -90,8 +105,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // Widget untuk daftar "Now Showing"
   Widget buildNowShowingList() {
+    final screenHeight = MediaQuery.of(context).size.height;
     return Container(
-      height: 300,
+      height: screenHeight * 0.38,
       child: FutureBuilder<List<dynamic>>(
         future: nowShowingMovies,
         builder: (context, snapshot) {
@@ -109,7 +125,6 @@ class _HomeScreenState extends State<HomeScreen> {
           return ListView.builder(
             scrollDirection: Axis.horizontal,
             itemCount: movies.length,
-            // Menambahkan padding agar list tidak terlalu mepet ke tepi
             padding: const EdgeInsets.symmetric(horizontal: 6.0),
             itemBuilder: (context, index) {
               var movie = movies[index];
