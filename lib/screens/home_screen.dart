@@ -29,21 +29,19 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
         leading: const IconButton(
-          icon: Icon(Icons.menu, color: Colors.black),
+          icon: Icon(Icons.menu),
           onPressed: null,
         ),
-        title: const Text(
-          'FilmKu',
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 24),
-        ),
+        title: const Text('FilmKu'),
         centerTitle: true,
         actions: const [
-          IconButton(
-            icon: Icon(Icons.notifications_none, color: Colors.black, size: 28),
-            onPressed: null,
+          Padding(
+            padding: EdgeInsets.only(right: 8.0),
+            child: IconButton(
+              icon: Icon(Icons.notifications_none, size: 28),
+              onPressed: null,
+            ),
           ),
         ],
       ),
@@ -51,14 +49,11 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // --- Bagian "Now Showing" ---
-            buildSectionTitle('Now Showing', nowShowingMovies),
+            const SizedBox(height: 16),
+            buildSectionTitle('Now Showing', nowShowingMovies, false),
             buildNowShowingList(),
-            
-            const SizedBox(height: 20),
-
-            // --- Bagian "Popular" ---
-            buildSectionTitle('Popular', popularMovies),
+            const SizedBox(height: 24),
+            buildSectionTitle('Popular', popularMovies, true),
             buildPopularList(),
           ],
         ),
@@ -66,8 +61,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // Widget untuk judul section dengan "See more" yang bisa diklik
-  Widget buildSectionTitle(String title, Future<List<dynamic>> movieFuture) {
+  Widget buildSectionTitle(String title, Future<List<dynamic>> movieFuture, bool isChip) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       child: Row(
@@ -79,7 +73,6 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           InkWell(
             onTap: () {
-              // Aksi navigasi saat "See more" di-tap
               Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -90,11 +83,19 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               );
             },
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
+            child: Container(
+              padding: isChip
+                  ? const EdgeInsets.symmetric(horizontal: 12, vertical: 6)
+                  : const EdgeInsets.all(8.0),
+              decoration: isChip
+                  ? BoxDecoration(
+                      border: Border.all(color: Colors.grey.shade300),
+                      borderRadius: BorderRadius.circular(20),
+                    )
+                  : null,
               child: Text(
                 'See more',
-                style: TextStyle(color: Colors.grey[600]),
+                style: TextStyle(color: Colors.grey[600], fontSize: 12),
               ),
             ),
           ),
@@ -103,11 +104,9 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // Widget untuk daftar "Now Showing"
   Widget buildNowShowingList() {
-    final screenHeight = MediaQuery.of(context).size.height;
-    return Container(
-      height: screenHeight * 0.38,
+    return SizedBox(
+      height: 280, // Disesuaikan untuk memberi ruang pada teks
       child: FutureBuilder<List<dynamic>>(
         future: nowShowingMovies,
         builder: (context, snapshot) {
@@ -125,14 +124,17 @@ class _HomeScreenState extends State<HomeScreen> {
           return ListView.builder(
             scrollDirection: Axis.horizontal,
             itemCount: movies.length,
-            padding: const EdgeInsets.symmetric(horizontal: 6.0),
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
             itemBuilder: (context, index) {
               var movie = movies[index];
-              return MovieCard(
-                id: movie['id'],
-                posterPath: movie['poster_path'],
-                title: movie['title'],
-                rating: movie['vote_average'].toDouble(),
+              return Padding(
+                padding: const EdgeInsets.only(right: 16.0),
+                child: MovieCard(
+                  id: movie['id'],
+                  posterPath: movie['poster_path'],
+                  title: movie['title'],
+                  rating: movie['vote_average'].toDouble(),
+                ),
               );
             },
           );
@@ -141,7 +143,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // Widget untuk daftar "Popular"
   Widget buildPopularList() {
     return FutureBuilder<List<dynamic>>(
       future: popularMovies,
@@ -160,15 +161,19 @@ class _HomeScreenState extends State<HomeScreen> {
         return ListView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
           itemCount: movies.length,
           itemBuilder: (context, index) {
             var movie = movies[index];
-            return PopularMovieCard(
-              id: movie['id'],
-              posterPath: movie['poster_path'],
-              title: movie['title'],
-              rating: movie['vote_average'].toDouble(),
-              genreIds: List<int>.from(movie['genre_ids']),
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 16.0),
+              child: PopularMovieCard(
+                id: movie['id'],
+                posterPath: movie['poster_path'],
+                title: movie['title'],
+                rating: movie['vote_average'].toDouble(),
+                genreIds: List<int>.from(movie['genre_ids']),
+              ),
             );
           },
         );

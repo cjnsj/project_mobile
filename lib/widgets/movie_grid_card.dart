@@ -1,17 +1,17 @@
-// lib/widgets/movie_card.dart
+// lib/widgets/movie_grid_card.dart
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import '../screens/detail_screen.dart';
 import '../services/api_service.dart';
 
-class MovieCard extends StatelessWidget {
+class MovieGridCard extends StatelessWidget {
   final int id;
   final String? posterPath;
   final String title;
   final double rating;
 
-  const MovieCard({
+  const MovieGridCard({
     super.key,
     required this.id,
     required this.posterPath,
@@ -30,48 +30,48 @@ class MovieCard extends StatelessWidget {
           ),
         );
       },
-      child: SizedBox(
-        width: 150, // Gunakan lebar tetap untuk ListView horizontal
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            ClipRRect(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: ClipRRect(
               borderRadius: BorderRadius.circular(12.0),
               child: CachedNetworkImage(
                 imageUrl: ApiService.getImageUrl(posterPath),
-                height: 200, // Tinggi tetap untuk poster
-                width: 150,
+                width: double.infinity, 
                 fit: BoxFit.cover,
                 placeholder: (context, url) =>
                     const Center(child: CircularProgressIndicator()),
                 errorWidget: (context, url, error) => Container(
-                  height: 200,
-                  width: 150,
                   color: Colors.grey[200],
                   child: const Icon(Icons.movie, color: Colors.grey),
                 ),
               ),
             ),
-            const SizedBox(height: 8),
-            Text(
-              title,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-            ),
-            const SizedBox(height: 4),
-            Row(
-              children: [
-                const Icon(Icons.star, color: Colors.amber, size: 16),
-                const SizedBox(width: 4),
-                Text(
+          ),
+          const SizedBox(height: 8),
+          Text(
+            title,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+          ),
+          const SizedBox(height: 4),
+          Row(
+            children: [
+              const Icon(Icons.star, color: Colors.amber, size: 16),
+              const SizedBox(width: 4),
+              Expanded(
+                child: Text(
                   '${rating.toStringAsFixed(1)} / 10 IMDb',
                   style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
                 ),
-              ],
-            )
-          ],
-        ),
+              ),
+            ],
+          )
+        ],
       ),
     );
   }

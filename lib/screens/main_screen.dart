@@ -1,5 +1,6 @@
 // lib/screens/main_screen.dart
 
+import 'package:eva_icons_flutter/eva_icons_flutter.dart';
 import 'package:flutter/material.dart';
 import 'home_screen.dart';
 import 'search_screen.dart';
@@ -37,25 +38,30 @@ class _MainScreenState extends State<MainScreen> {
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
-            icon: Icon(Icons.movie_filter_rounded),
+            icon: Icon(EvaIcons.filmOutline),
+            activeIcon: Icon(EvaIcons.film),
             label: 'Home',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.search),
+            icon: Icon(EvaIcons.searchOutline),
+            activeIcon: Icon(EvaIcons.search),
             label: 'Search',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.bookmark_rounded),
+            icon: Icon(EvaIcons.bookmarkOutline),
+            activeIcon: Icon(EvaIcons.bookmark),
             label: 'Bookmarks',
           ),
         ],
         currentIndex: _selectedIndex,
-        selectedItemColor: Colors.blueAccent,
+        selectedItemColor: const Color(0xFF3F51B5), // Warna biru indigo
         unselectedItemColor: Colors.grey,
         onTap: _onItemTapped,
         type: BottomNavigationBarType.fixed,
         backgroundColor: Colors.white,
-        elevation: 8.0,
+        elevation: 10.0,
+        showSelectedLabels: true, // Sesuai desain, label hanya muncul saat aktif
+        showUnselectedLabels: true,
       ),
     );
   }

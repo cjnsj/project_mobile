@@ -4,20 +4,25 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class ApiService {
-  static const String _apiKey =
-      '895dd7777d25d9011fb9ef7bde76c54d'; // API Key Anda
-  static const String _baseUrl = 'https://api.themoviedb.org/3';
+  // Variabel ini dibuat public agar bisa diakses dari file lain
+  static const String apiKey = '895dd7777d25d9011fb9ef7bde76c54d';
+  static const String baseUrl = 'https://api.themoviedb.org/3';
 
-  // Fungsi untuk mendapatkan URL gambar poster dengan ukuran w500
-  static String getImageUrl(String path) {
+  // URL untuk poster kualitas standar (untuk daftar)
+  static String getImageUrl(String? path) {
+    if (path == null || path.isEmpty) return 'https://placehold.co/500x750/e0e0e0/555555?text=No+Image';
     return 'https://image.tmdb.org/t/p/w500$path';
   }
 
-  // Fungsi untuk mengambil film yang sedang tayang ("Now Showing")
+  // URL untuk gambar kualitas original (untuk latar belakang detail)
+  static String getOriginalImageUrl(String? path) {
+    if (path == null || path.isEmpty) return 'https://placehold.co/1280x720/e0e0e0/555555?text=No+Image';
+    return 'https://image.tmdb.org/t/p/original$path';
+  }
+
+  // Sisa fungsi tidak berubah...
   Future<List<dynamic>> getNowShowingMovies() async {
-    final response = await http.get(
-      Uri.parse('$_baseUrl/movie/now_playing?api_key=$_apiKey'),
-    );
+    final response = await http.get(Uri.parse('$baseUrl/movie/now_playing?api_key=$apiKey'));
     if (response.statusCode == 200) {
       return json.decode(response.body)['results'];
     } else {
@@ -25,11 +30,8 @@ class ApiService {
     }
   }
 
-  // Fungsi untuk mengambil film populer ("Popular")
   Future<List<dynamic>> getPopularMovies() async {
-    final response = await http.get(
-      Uri.parse('$_baseUrl/movie/popular?api_key=$_apiKey'),
-    );
+    final response = await http.get(Uri.parse('$baseUrl/movie/popular?api_key=$apiKey'));
     if (response.statusCode == 200) {
       return json.decode(response.body)['results'];
     } else {
@@ -37,11 +39,8 @@ class ApiService {
     }
   }
 
-  // Fungsi untuk mengambil detail film berdasarkan ID
   Future<Map<String, dynamic>> getMovieDetail(int movieId) async {
-    final response = await http.get(
-      Uri.parse('$_baseUrl/movie/$movieId?api_key=$_apiKey'),
-    );
+    final response = await http.get(Uri.parse('$baseUrl/movie/$movieId?api_key=$apiKey'));
     if (response.statusCode == 200) {
       return json.decode(response.body);
     } else {
@@ -49,11 +48,8 @@ class ApiService {
     }
   }
 
-  // Fungsi untuk mengambil daftar pemeran (cast) film
   Future<List<dynamic>> getMovieCast(int movieId) async {
-    final response = await http.get(
-      Uri.parse('$_baseUrl/movie/$movieId/credits?api_key=$_apiKey'),
-    );
+    final response = await http.get(Uri.parse('$baseUrl/movie/$movieId/credits?api_key=$apiKey'));
     if (response.statusCode == 200) {
       return json.decode(response.body)['cast'];
     } else {
@@ -61,12 +57,9 @@ class ApiService {
     }
   }
 
-  // Fungsi untuk mendapatkan kunci video trailer dari YouTube
   Future<String> getMovieTrailer(int movieId) async {
-    final response = await http.get(
-      Uri.parse('$_baseUrl/movie/$movieId/videos?api_key=$_apiKey'),
-    );
-
+    final response = await http.get(Uri.parse('$baseUrl/movie/$movieId/videos?api_key=$apiKey'));
+    
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
       final results = data['results'] as List;
@@ -75,11 +68,11 @@ class ApiService {
         (video) => video['site'] == 'YouTube' && video['type'] == 'Trailer',
         orElse: () => null,
       );
-
+      
       if (officialTrailer != null) {
         return officialTrailer['key'];
       } else {
-        final anyTrailer = results.firstWhere(
+         final anyTrailer = results.firstWhere(
           (video) => video['site'] == 'YouTube',
           orElse: () => null,
         );
@@ -87,22 +80,19 @@ class ApiService {
           return anyTrailer['key'];
         }
       }
-
+      
       throw Exception('Trailer tidak ditemukan.');
     } else {
       throw Exception('Gagal memuat video trailer.');
     }
   }
 
-  // Fungsi untuk mencari film berdasarkan query
   Future<List<dynamic>> searchMovies(String query) async {
     if (query.isEmpty) {
-      return []; // Kembalikan list kosong jika query kosong
+      return [];
     }
-    final response = await http.get(
-      Uri.parse('$_baseUrl/search/movie?api_key=$_apiKey&query=$query'),
-    );
-
+    final response = await http.get(Uri.parse('$baseUrl/search/movie?api_key=$apiKey&query=$query'));
+    
     if (response.statusCode == 200) {
       return json.decode(response.body)['results'];
     } else {

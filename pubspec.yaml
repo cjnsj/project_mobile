@@ -38,6 +38,7 @@ dependencies:
   youtube_player_flutter: ^9.0.0
   # GUNAKAN VERSI TERBARU DENGAN TANDA CARET (^)
   flutter_inappwebview: ^6.0.0
+  eva_icons_flutter: ^3.1.0 
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.

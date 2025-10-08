@@ -1,9 +1,10 @@
 // lib/screens/movie_list_screen.dart
 
 import 'package:flutter/material.dart';
-import '../widgets/movie_card.dart'; // Kita gunakan ulang MovieCard
+import '../widgets/movie_grid_card.dart'; // <-- GANTI IMPORT INI
 
 class MovieListScreen extends StatelessWidget {
+  // ... (sisa kode constructor tidak berubah)
   final String title;
   final Future<List<dynamic>> movieFuture;
 
@@ -13,11 +14,11 @@ class MovieListScreen extends StatelessWidget {
     required this.movieFuture,
   });
 
+
   @override
   Widget build(BuildContext context) {
-    // Menghitung jumlah kolom grid berdasarkan lebar layar
     final screenWidth = MediaQuery.of(context).size.width;
-    final crossAxisCount = (screenWidth / 170).floor(); // 170 adalah perkiraan lebar per kartu
+    final crossAxisCount = (screenWidth / 170).floor();
 
     return Scaffold(
       appBar: AppBar(
@@ -49,15 +50,15 @@ class MovieListScreen extends StatelessWidget {
           return GridView.builder(
             padding: const EdgeInsets.all(10.0),
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: crossAxisCount, // Jumlah kolom dinamis
-              childAspectRatio: 0.52, // Rasio aspek kartu (lebar/tinggi)
+              crossAxisCount: crossAxisCount,
+              childAspectRatio: 0.58, // Sesuaikan rasio jika perlu
               crossAxisSpacing: 10,
               mainAxisSpacing: 10,
             ),
             itemCount: movies.length,
             itemBuilder: (context, index) {
               var movie = movies[index];
-              return MovieCard(
+              return MovieGridCard( // <-- GANTI WIDGET INI
                 id: movie['id'],
                 posterPath: movie['poster_path'],
                 title: movie['title'],
