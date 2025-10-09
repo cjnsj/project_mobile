@@ -30,15 +30,21 @@ class MovieGridCard extends StatelessWidget {
           ),
         );
       },
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(12.0),
+      // Bungkus dengan Card untuk efek visual yang lebih baik
+      child: Card(
+        clipBehavior: Clip.antiAlias,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12.0),
+        ),
+        elevation: 5,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // UBAH: Gunakan Expanded di sini agar Column mengisi Card
+            Expanded(
               child: CachedNetworkImage(
                 imageUrl: ApiService.getImageUrl(posterPath),
-                width: double.infinity, 
+                width: double.infinity,
                 fit: BoxFit.cover,
                 placeholder: (context, url) =>
                     const Center(child: CircularProgressIndicator()),
@@ -48,30 +54,40 @@ class MovieGridCard extends StatelessWidget {
                 ),
               ),
             ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            title,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-          ),
-          const SizedBox(height: 4),
-          Row(
-            children: [
-              const Icon(Icons.star, color: Colors.amber, size: 16),
-              const SizedBox(width: 4),
-              Expanded(
-                child: Text(
-                  '${rating.toStringAsFixed(1)} / 10 IMDb',
-                  style: TextStyle(color: Colors.grey[600], fontSize: 12),
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 1,
-                ),
+            // Beri padding agar teks tidak menempel
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      const Icon(Icons.star, color: Colors.amber, size: 16),
+                      const SizedBox(width: 4),
+                      Text(
+                        rating.toStringAsFixed(1),
+                        style: TextStyle(
+                          color: Colors.grey[700],
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  )
+                ],
               ),
-            ],
-          )
-        ],
+            ),
+          ],
+        ),
       ),
     );
   }

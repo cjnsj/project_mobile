@@ -2,6 +2,7 @@
 
 import 'package:filmku_app/screens/main_screen.dart';
 import 'package:filmku_app/services/genre_service.dart';
+import 'package:filmku_app/services/language_service.dart'; // <-- 1. IMPORT
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -9,8 +10,11 @@ import 'package:google_fonts/google_fonts.dart';
 void main() async {
   // Pastikan semua binding Flutter siap sebelum menjalankan kode async
   WidgetsFlutterBinding.ensureInitialized();
-  // Panggil dan tunggu service genre selesai memuat data sebelum aplikasi berjalan
-  await GenreService().loadGenres();
+  /// Jalankan kedua service secara bersamaan untuk efisiensi
+  await Future.wait([
+    GenreService().loadGenres(),
+    LanguageService().loadLanguages(), // <-- 2. TAMBAHKAN INI
+  ]);
   runApp(const MyApp());
 }
 

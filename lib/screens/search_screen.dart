@@ -1,5 +1,6 @@
 // lib/screens/search_screen.dart
 
+import 'dart:async'; // Import untuk Timer (debouncing)
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import '../widgets/popular_movie_card.dart';
@@ -14,15 +15,47 @@ class SearchScreen extends StatefulWidget {
 class _SearchScreenState extends State<SearchScreen> {
   final ApiService apiService = ApiService();
   final TextEditingController _searchController = TextEditingController();
-  
-  Future<List<dynamic>>? _searchResults;
 
-  void _performSearch() {
-    final query = _searchController.text.trim();
-    if (query.isNotEmpty) {
+  List<dynamic>? _results;
+  bool _isLoading = false;
+  Timer? _debounce;
+
+  // Fungsi yang dipanggil saat teks di kolom pencarian berubah
+  void _onSearchChanged(String query) {
+    // Batalkan timer sebelumnya jika ada
+    if (_debounce?.isActive ?? false) _debounce!.cancel();
+
+    // Atur timer baru. Jika pengguna tidak mengetik lagi selama 500ms, lakukan pencarian.
+    _debounce = Timer(const Duration(milliseconds: 500), () {
+      if (query.isNotEmpty) {
+        _performSearch(query);
+      } else {
+        // Jika kolom pencarian kosong, bersihkan hasil
+        setState(() {
+          _results = null;
+          _isLoading = false;
+        });
+      }
+    });
+  }
+
+  Future<void> _performSearch(String query) async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final results = await apiService.searchMovies(query);
       setState(() {
-        _searchResults = apiService.searchMovies(query);
+        _results = results;
+        _isLoading = false;
       });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+        _results = []; // Kosongkan hasil jika ada error
+      });
+      // Tampilkan pesan error jika perlu
     }
   }
 
@@ -45,62 +78,94 @@ class _SearchScreenState extends State<SearchScreen> {
             padding: const EdgeInsets.all(16.0),
             child: TextField(
               controller: _searchController,
+              autofocus: true, // Langsung fokus ke kolom pencarian
               decoration: InputDecoration(
-                hintText: 'Cari film favoritmu...',
+                hintText: 'Cari Film/Movie Favorite-Mu"',
                 prefixIcon: const Icon(Icons.search),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12.0),
-                  borderSide: const BorderSide(color: Colors.grey),
+                  borderSide: BorderSide.none,
                 ),
+                fillColor: Colors.grey[100],
+                filled: true,
                 contentPadding: const EdgeInsets.symmetric(vertical: 10.0),
               ),
-              onSubmitted: (value) => _performSearch(), // Cari saat menekan enter
+              onChanged: _onSearchChanged, // Panggil fungsi saat teks berubah
             ),
           ),
 
           // Daftar Hasil Pencarian
-          Expanded(
-            child: _searchResults == null
-                ? const Center(child: Icon(Icons.search, size: 60, color: Colors.grey))
-                : FutureBuilder<List<dynamic>>(
-                    future: _searchResults,
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const Center(child: CircularProgressIndicator());
-                      }
-                      if (snapshot.hasError) {
-                        return Center(child: Text('Error: ${snapshot.error}'));
-                      }
-                      if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                        return const Center(child: Text('Film tidak ditemukan.'));
-                      }
-
-                      var movies = snapshot.data!;
-                      return ListView.builder(
-                        padding: const EdgeInsets.only(bottom: 16.0),
-                        itemCount: movies.length,
-                        itemBuilder: (context, index) {
-                          var movie = movies[index];
-                          return PopularMovieCard(
-                            id: movie['id'],
-                            posterPath: movie['poster_path'],
-                            title: movie['title'],
-                            rating: movie['vote_average'].toDouble(),
-                            genreIds: List<int>.from(movie['genre_ids']),
-                          );
-                        },
-                      );
-                    },
-                  ),
-          ),
+          Expanded(child: _buildResults()),
         ],
       ),
+    );
+  }
+
+  // Widget untuk menampilkan hasil berdasarkan state
+  Widget _buildResults() {
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (_results == null) {
+      // Tampilan awal sebelum pencarian dilakukan
+      return const Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.movie_filter_outlined, size: 80, color: Colors.grey),
+            SizedBox(height: 16),
+            Text(
+              'Temukan Film Favoritmu',
+              style: TextStyle(fontSize: 18, color: Colors.grey),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (_results!.isEmpty) {
+      // Tampilan jika hasil pencarian kosong
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.search_off_rounded, size: 80, color: Colors.grey),
+            const SizedBox(height: 16),
+            Text(
+              'Film "${_searchController.text}" tidak ditemukan',
+              style: const TextStyle(fontSize: 18, color: Colors.grey),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      );
+    }
+
+    // Tampilan jika ada hasil
+    return ListView.builder(
+      padding: const EdgeInsets.only(bottom: 16.0),
+      itemCount: _results!.length,
+      itemBuilder: (context, index) {
+        var movie = _results![index];
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+          child: PopularMovieCard(
+            id: movie['id'],
+            posterPath: movie['poster_path'],
+            title: movie['title'],
+            rating: movie['vote_average'].toDouble(),
+            genreIds: List<int>.from(movie['genre_ids']),
+          ),
+        );
+      },
     );
   }
 
   @override
   void dispose() {
     _searchController.dispose();
+    _debounce?.cancel();
     super.dispose();
   }
 }

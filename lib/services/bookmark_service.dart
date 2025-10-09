@@ -1,9 +1,14 @@
 // lib/services/bookmark_service.dart
 
+import 'dart:async'; // TAMBAHKAN: Import untuk StreamController
 import 'package:shared_preferences/shared_preferences.dart';
 
 class BookmarkService {
   static const _key = 'bookmarkedMovies';
+
+  // TAMBAHKAN: StreamController untuk menyiarkan perubahan
+  static final _bookmarksChangedController = StreamController<void>.broadcast();
+  static Stream<void> get bookmarksStream => _bookmarksChangedController.stream;
 
   // Mendapatkan daftar ID film yang di-bookmark
   static Future<List<int>> getBookmarks() async {
@@ -19,6 +24,7 @@ class BookmarkService {
     if (!bookmarks.contains(movieId)) {
       bookmarks.add(movieId);
       await prefs.setStringList(_key, bookmarks.map((id) => id.toString()).toList());
+      _bookmarksChangedController.add(null); // UBAH: Kirim sinyal perubahan
     }
   }
 
@@ -29,6 +35,7 @@ class BookmarkService {
     if (bookmarks.contains(movieId)) {
       bookmarks.remove(movieId);
       await prefs.setStringList(_key, bookmarks.map((id) => id.toString()).toList());
+      _bookmarksChangedController.add(null); // UBAH: Kirim sinyal perubahan
     }
   }
 

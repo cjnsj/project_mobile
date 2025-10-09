@@ -1,5 +1,6 @@
 // lib/screens/bookmarks_screen.dart
 
+import 'dart:async'; // TAMBAHKAN: Import untuk StreamSubscription
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import '../services/bookmark_service.dart';
@@ -14,19 +15,36 @@ class BookmarksScreen extends StatefulWidget {
 
 class _BookmarksScreenState extends State<BookmarksScreen> {
   final ApiService apiService = ApiService();
-  
   late Future<List<Map<String, dynamic>>> _bookmarkedMovies;
+  
+  // TAMBAHKAN: Variabel untuk menyimpan langganan stream
+  late StreamSubscription _bookmarkSubscription;
 
   @override
   void initState() {
     super.initState();
     _loadBookmarkedMovies();
+
+    // UBAH: Mulai mendengarkan stream dari BookmarkService
+    _bookmarkSubscription = BookmarkService.bookmarksStream.listen((_) {
+      // Jika ada sinyal, muat ulang daftar film
+      _loadBookmarkedMovies();
+    });
+  }
+
+  @override
+  void dispose() {
+    // UBAH: Batalkan langganan untuk mencegah memory leak
+    _bookmarkSubscription.cancel();
+    super.dispose();
   }
 
   void _loadBookmarkedMovies() {
-    setState(() {
-      _bookmarkedMovies = _fetchBookmarkedMovieDetails();
-    });
+    if (mounted) { // Pastikan widget masih ada di tree
+      setState(() {
+        _bookmarkedMovies = _fetchBookmarkedMovieDetails();
+      });
+    }
   }
 
   Future<List<Map<String, dynamic>>> _fetchBookmarkedMovieDetails() async {
